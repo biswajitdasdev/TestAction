@@ -8,14 +8,19 @@ jobs:
   build:
     name: Hello world
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 23.x]
     steps:
        - uses: actions/checkout@v4
 
-       - name: run one line script
-         run: echo "hello world"
+       - name: Use Node.js ${{matrix.node-version}}
+         uses: actions/setup-node@v3
+         with:
+           node-version: ${{matrix.node-version}}
+           cache: 'npm'
 
-       - name: run multi line script
-         run: |
-           echo "Hi"
-           echo "hello"
+       - run: npm ci
+       - run: npm run build --if-present
+       - run: npm test
     
