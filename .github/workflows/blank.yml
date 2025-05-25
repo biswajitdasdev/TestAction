@@ -9,6 +9,9 @@ jobs:
   basic-checkout:
     runs-on: ubuntu-latest
 
+    env:
+      CUSTOM_MESSAGE: "Hello from basic checkout job"
+
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -27,3 +30,16 @@ jobs:
           echo "Node Version $(node --version)"
           echo "Python Version $(python --version)"
           echo "Git Version $(git --version)"
+
+      - name: More about sytem
+        run: |
+          echo "Date $(date)"
+          echo "Available diskspace $(df -h)"
+          echo "Memory usage $(free -m)"
+
+      - name: print message
+        run: echo "$CUSTOM_MESSAGE"
+
+      - name: conditional step
+        if: if github.event_name == 'push'
+        run: echo "This was triggered by push event"
