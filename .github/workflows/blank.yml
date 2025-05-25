@@ -1,30 +1,29 @@
-name: CI
-on:
-  issues:
-    types: [opened]
+name: Basic Checkout 
 
-permissions:
-  issues: write
+on:
+  push:
+    brances: 
+      - main
 
 jobs:
-  comment:
+  basic-checkout:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const columnId = 123456; // Replace with actual column ID or fetch dynamically
-
-            await github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "You've created this issue comment using GitHub Script!"
-            });
-
-            await github.projects.createCard({
-              column_id: columnId,
-              content_id: context.payload.issue.id,
-              content_type: "Issue"
-            });
+      - name: checkout repository
+        uses: actions/checkout@v4
+      
+      - name: List files
+        run: ls -la
+      
+      - name: Show system info
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Operating System: $(uname -a)"
+          echo "Current directory $(pwd)"
+      
+      - name: Show Versions
+        run: |
+          echo "Node Version $(node -v)"
+          echo "Python Version $(python -v)"
+          echo "Git Version $(git -v)"
