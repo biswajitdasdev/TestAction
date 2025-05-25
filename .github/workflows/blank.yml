@@ -24,6 +24,6 @@ jobs:
       
       - name: Show Versions
         run: |
-          echo "Node Version $(node -v)"
-          echo "Python Version $(python -v)"
-          echo "Git Version $(git -v)"
+          echo "Node Version $(node --version)"
+          echo "Python Version $(python --version)"
+          echo "Git Version $(git --version)"
