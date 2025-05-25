@@ -1,45 +1,84 @@
-name: Basic Checkout 
+name: multiple jobs
 
 on:
   push:
-    brances: 
+    branches:
       - main
 
 jobs:
-  basic-checkout:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: 1.0.0
+    steps:
+      - name: Print branch version name
+        run: |
+          echo "The current branch is ${{ github.ref }}"
+          echo "Building version $BUILD_VERSION"
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build step
+        run: |
+          echo "🏗️ Building the application..."
+          echo "Build completed successfully!"
+
+      - name: ✅ Build succeeded!
+        if: success()
+        run: echo "✅ Build succeeded!"
+
+      - name: ⚠️ Build failed
+        if: failure()
+        run: echo "⚠️ Build failed. Please check the logs."
+
+  test:
+    name: Test Application
+    needs: build
     runs-on: ubuntu-latest
 
-    env:
-      CUSTOM_MESSAGE: "Hello from basic checkout job"
+    steps:
+      - name: Run tests
+        run: |
+          echo "🧪 Running tests..."
+          echo "All tests passed!"
+
+      - name: ✅ Tests passed!
+        if: success()
+        run: echo "✅ Tests passed!"
+
+      - name: ⚠️ Tests failed
+        if: failure()
+        run: echo "⚠️ Tests failed. Please review the test logs."
+
+  deploy:
+    name: Deploy Application
+    if: github.ref == '/refs/heads/main'
+    needs: [build, test]
+    runs-on: ubuntu-latest
 
     steps:
-      - name: checkout repository
-        uses: actions/checkout@v4
-      
-      - name: List files
-        run: ls -la
-      
-      - name: Show system info
+      - name: Deploying
         run: |
-          echo "Repository: $GITHUB_REPOSITORY"
-          echo "Operating System: $(uname -a)"
-          echo "Current directory $(pwd)"
-      
-      - name: Show Versions
+          echo "🚀 Deploying application..."
+          echo "Deployment successful!"
+
+      - name: ✅ Deployment succeeded
+        if: success()
+        run: echo "✅ Deployment succeeded!"
+
+      - name: ⚠️ Deployment failed
+        if: failure()
+        run: echo "⚠️ Deployment failed. Please investigate."
+
+  notify:
+    name: Send Notification
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification
         run: |
-          echo "Node Version $(node --version)"
-          echo "Python Version $(python --version)"
-          echo "Git Version $(git --version)"
-
-      - name: More about sytem
-        run: |
-          echo "Date $(date)"
-          echo "Available diskspace $(df -h)"
-          echo "Memory usage $(free -m)"
-
-      - name: print message
-        run: echo "$CUSTOM_MESSAGE"
-
-      - name: conditional step
-        if: github.event_name == 'push'
-        run: echo "This was triggered by push event"
+          echo "📧 Sending deployment notification..."
+          echo "Notification sent!"
