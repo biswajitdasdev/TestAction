@@ -44,7 +44,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
       - name: Update Kubernetes Manifests
         run: |
-          for file in nginx-deployment/*.yml; do
+          for file in nginx-deployment/*.yaml; do
             sed -i "s|\${DOCKER_REGISTRY}|$DOCKER_REGISTRY|g" $file
             sed -i "s|\${DOCKER_IMAGE}|$DOCKER_IMAGE|g" $file
             sed -i "s|\${IMAGE_TAG}|${{ github.sha }}|g" $file
@@ -54,6 +54,6 @@ jobs:
           done
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f nginx-deployment/namespace.yml
-          kubectl apply -f nginx-deployment/deployment.yml
-          kubectl apply -f nginx-deployment/service.yml
+          kubectl apply -f nginx-deployment/namespace.yaml
+          kubectl apply -f nginx-deployment/deployment.yaml
+          kubectl apply -f nginx-deployment/service.yaml
