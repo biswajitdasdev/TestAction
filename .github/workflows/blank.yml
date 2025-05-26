@@ -1,6 +1,6 @@
 name: Nginx Docker Lab
 on:
-  pull-request:
+  pull_request:
     types: [closed]
     branches:
       - main
