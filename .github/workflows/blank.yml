@@ -21,7 +21,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t mynginx:test .
       
-     - name: Run Docker container
+      - name: Run Docker container
         run: docker run -d -p 8080:80 --name test-nginx mynginx:test
 
       - name: Wait for Nginx to start
