@@ -1,101 +1,36 @@
-name: multiple jobs
-
+name: Nginx Docker Lab
 on:
-  push:
+  pull-request:
+    types: [closed]
     branches:
       - main
 
 jobs:
-  build:
-    name: Build Application
+  docker:
+    if: github.event.pull_request.merged == true
+    name: build docker file and push to docker hub
     runs-on: ubuntu-latest
-    env:
-      BUILD_VERSION: 1.0.0
     steps:
-      - name: Print branch version name
-        run: |
-          echo "The current branch is ${{ github.ref }}"
-          echo "Building version $BUILD_VERSION"
-          
-      - name: Checkout repository
+      - name: checkout code
         uses: actions/checkout@v4
-
-      - name: Build step
-        run: |
-          echo "🏗️ Building the application..."
-          echo "This is build output" > build-output.txt
-          echo "Build completed successfully!"
       
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Login to Dockerhub
+        uses: docker/login-action@v3
         with:
-          name: build-artifact
-          path: build-output.txt
-
-      - name: ✅ Build succeeded!
-        if: success()
-        run: echo "✅ Build succeeded!"
-
-      - name: ⚠️ Build failed
-        if: failure()
-        run: echo "⚠️ Build failed. Please check the logs."
-
-  test:
-    name: Test Application
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Run tests
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
+      
+      - name: Build Docker image
+        run: docker build -t mynginx:test .
+      
+      - name: Test Docker image
         run: |
-          echo "🧪 Running tests..."
-          echo "All tests passed!"
-
-      - name: Download Artificat
-        uses: actions/download-artifact@v4
-        with: 
-          name: build-artifact
-
-      - name: Show file content
+          docker run -d -p 8080:80 --name test-nginx mynginx:test
+          sleep 5
+          curl http://localhost:8080 | grep "Hello from GitHub Actions"
+          docker stop test-nginx
+      
+      - name: Push to docker hub
         run: |
-          echo "🧪 File content from build job:"
-          cat build-output.txt
-          
-      - name: ✅ Tests passed!
-        if: success()
-        run: echo "✅ Tests passed!"
-
-      - name: ⚠️ Tests failed
-        if: failure()
-        run: echo "⚠️ Tests failed. Please review the test logs."
-
-  deploy:
-    name: Deploy Application
-    if: github.ref == 'refs/heads/main'
-    needs: [build, test]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploying
-        run: |
-          echo "🚀 Deploying application..."
-          echo "Deployment successful!"
-
-      - name: ✅ Deployment succeeded
-        if: success()
-        run: echo "✅ Deployment succeeded!"
-
-      - name: ⚠️ Deployment failed
-        if: failure()
-        run: echo "⚠️ Deployment failed. Please investigate."
-
-  notify:
-    name: Send Notification
-    needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Send notification
-        run: |
-          echo "📧 Sending deployment notification..."
-          echo "Notification sent!"
+          docker tag mynginx:test ${{secrets.DOCKER_USERNAME}}/mynginx:latest
+          docker push ${{secrets.DOCKER_USERNAME}}/mynginx:latest 
